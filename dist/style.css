@@ -32,6 +32,23 @@ body{
 
 .table{
     padding-top: 70px;
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
+    display: flex;
+}
+
+.column{
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: start;
+}
+
+.column *{
+    height: 50px;
+    width: 100px;
+}
+
+.tag{
+    text-align: center;
+    border: 1px solid black;
 }
