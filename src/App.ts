@@ -2,6 +2,7 @@ import { ReactComponent } from "./component";
 import Header, { IHeaderProps } from "./components/header";
 import Table, { ITableProp } from "./components/table";
 import { generateLetterByNumber } from "./helpers/letterGenerator";
+import CreationPage, { IConstraints, ITableConstraintsProps } from "./pages/creationPage";
 import { React } from "./react";
 import { ReactNode } from "./types";
 
@@ -14,23 +15,31 @@ export interface CellInfo {
 }
 
 interface IAppState {
+    constraints: IConstraints
     elements: Array<CellInfo>,
-    selectedid: number | null
+    selectedid: number | null,
+    isCreating: boolean
 }
 
 
 class App extends ReactComponent<{}, IAppState>{
 
+    state: IAppState = {
+        elements: [],
+        selectedid: null,
+        constraints: {
+            columns: 10,
+            rows: 10
+        },
+        isCreating: true
+    }
 
-    columnCount = 60;
-    rowCount = 20;
-
-    private buildElements() {
+    private buildElements(columnCount: number, rowCount: number) {
         let elements: CellInfo[] = [];
-        for (let columnTag = 0; columnTag < this.columnCount; columnTag++) {
-            for (let rowTag = 0; rowTag < this.rowCount ; rowTag++) {
+        for (let columnTag = 0; columnTag < columnCount; columnTag++) {
+            for (let rowTag = 0; rowTag < rowCount; rowTag++) {
                 elements.push({
-                    tableId: generateLetterByNumber(columnTag) +(rowTag + 1).toString(),
+                    tableId: generateLetterByNumber(columnTag) + (rowTag + 1).toString(),
                     columnTag: columnTag.toString(),
                     rowTag: rowTag.toString(),
                     value: ''
@@ -38,11 +47,6 @@ class App extends ReactComponent<{}, IAppState>{
             }
         }
         return elements;
-    }
-
-    state: IAppState = {
-        elements: this.buildElements(),
-        selectedid: null,
     }
 
     setValue = (value: string) => {
@@ -61,6 +65,16 @@ class App extends ReactComponent<{}, IAppState>{
         }
     }
 
+    setConstraints = (key: string, value: number) => {
+        this.setState(state => ({
+            ...state,
+            constraints: {
+                ...state.constraints,
+                [key]: value
+            }
+        }));
+    }
+
     setSelected = (index: number) => {
         this.setState((state) => ({
             ...state,
@@ -68,31 +82,53 @@ class App extends ReactComponent<{}, IAppState>{
         }))
     }
 
+    setToTable = () => this.setState(state => ({ ...state, isCreating: false }));
+
+    initElements = () => {
+        this.setState(state => ({
+            ...state,
+            elements: this.buildElements(state.constraints.columns, state.constraints.rows)
+        }))
+    }
+
     public render(): ReactNode {
-        return React.createElement({
-            tagname: 'div',
-            className: 'app',
-            key: 'app',
-            children: [
-                React.createComponent<IHeaderProps>({
-                    key: 'header-c',
-                    component: Header,
-                    props: {
-                        value: this.state.selectedid != null ? this.state.elements[this.state.selectedid].value : '',
-                        setValue: this.setValue
-                    }
-                }),
-                React.createComponent<ITableProp>({
-                    key: 'table-c',
-                    component: Table,
-                    props: {
-                        elements: this.state.elements,
-                        setValue: this.setValue,
-                        setSelected: this.setSelected
-                    }
-                })
-            ]
-        });
+
+        return this.state.isCreating
+            ? React.createComponent<ITableConstraintsProps>({
+                key: 'creation-window-page',
+                component: CreationPage,
+                props: {
+                    setConstraints: this.setConstraints,
+                    constraints: this.state.constraints,
+                    setToTable: this.setToTable
+                }
+            })
+
+            : React.createElement({
+                tagname: 'div',
+                className: 'app',
+                key: 'app',
+                children: [
+                    React.createComponent<IHeaderProps>({
+                        key: 'header-c',
+                        component: Header,
+                        props: {
+                            value: this.state.selectedid != null ? this.state.elements[this.state.selectedid].value : '',
+                            setValue: this.setValue
+                        }
+                    }),
+                    React.createComponent<ITableProp>({
+                        key: 'table-c',
+                        component: Table,
+                        props: {
+                            elements: this.state.elements,
+                            initElements: this.initElements,
+                            setValue: this.setValue,
+                            setSelected: this.setSelected
+                        }
+                    })
+                ]
+            });
     }
 }
 

@@ -7,6 +7,7 @@ import Cell, { ICell } from "./cell";
 
 export interface ITableProp {
     elements: Array<CellInfo>,
+    initElements: () => void
     setSelected: (index: number) => void,
     setValue: (value: string) => void
 }
@@ -14,6 +15,11 @@ export interface ITableProp {
 
 
 class Table extends ReactComponent<ITableProp, {}>{
+
+    componentDidMount(){
+        this.props.initElements();
+    }
+
     setSelected = (index: number) => {
         return () => this.props.setSelected(index)
     }
@@ -78,7 +84,7 @@ class Table extends ReactComponent<ITableProp, {}>{
             key: 'table',
             tagname: 'div',
             className: 'table',
-            children: this.buildLayout()
+            children: this.props.elements.length > 0 ? this.buildLayout() : []
         })
     }
 }
