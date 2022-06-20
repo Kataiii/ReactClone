@@ -1,5 +1,6 @@
 import { CellInfo } from "../App";
 import { ReactComponent } from "../component";
+import { generateLetterByNumber } from "../helpers/letterGenerator";
 import { React } from "../react";
 import { ReactNode } from "../types";
 import Cell, { ICell } from "./cell";
@@ -44,7 +45,7 @@ class Table extends ReactComponent<ITableProp, {}>{
                 tagname: 'div',
                 className: 'tag',
                 children: [
-                    React.createText({ value: String.fromCodePoint('A'.codePointAt(0) + columnIndex) })
+                    React.createText({ value: generateLetterByNumber(columnIndex)})
                 ]
             })];
             for (let rowIndex = columnIndex; rowIndex < this.props.elements.length; rowIndex += columnCount) {

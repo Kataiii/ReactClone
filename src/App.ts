@@ -1,11 +1,13 @@
 import { ReactComponent } from "./component";
 import Header, { IHeaderProps } from "./components/header";
 import Table, { ITableProp } from "./components/table";
+import { generateLetterByNumber } from "./helpers/letterGenerator";
 import { React } from "./react";
 import { ReactNode } from "./types";
 
 
 export interface CellInfo {
+    tableId: string,
     columnTag: string,
     rowTag: string,
     value: string
@@ -20,7 +22,7 @@ interface IAppState {
 class App extends ReactComponent<{}, IAppState>{
 
 
-    columnCount = 20;
+    columnCount = 60;
     rowCount = 20;
 
     private buildElements() {
@@ -28,6 +30,7 @@ class App extends ReactComponent<{}, IAppState>{
         for (let columnTag = 0; columnTag < this.columnCount; columnTag++) {
             for (let rowTag = 0; rowTag < this.rowCount ; rowTag++) {
                 elements.push({
+                    tableId: generateLetterByNumber(columnTag) +(rowTag + 1).toString(),
                     columnTag: columnTag.toString(),
                     rowTag: rowTag.toString(),
                     value: ''
