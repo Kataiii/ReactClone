@@ -1,7 +1,8 @@
-import { VDomNode } from "./virtual_dom";
-import { ChildUpdater, VDomNodeUpdater } from "./diffs";
 
-const renderElement = (rootNode: VDomNode): HTMLElement | Text => {
+import { ChildUpdater, VDomNodeUpdater } from "./diffs";
+import { ReactNode } from "./types";
+
+const renderElement = (rootNode: ReactNode): HTMLElement | Text => {
   if (rootNode.kind == 'text') {
     return document.createTextNode(rootNode.value)
   }
@@ -25,7 +26,7 @@ const renderElement = (rootNode: VDomNode): HTMLElement | Text => {
     (elem as any)[att] = rootNode.props[att]
   }
 
-  (rootNode.childeren || []).forEach(child =>
+  (rootNode.children || []).forEach(child =>
     elem.appendChild(renderElement(child))
   )
 
@@ -82,7 +83,7 @@ const applyChildrenDiff = (elem: HTMLElement, operations: ChildUpdater[]) => {
   }
 }
 
-export const renderDOM = (htmlId: string, rootNode: VDomNode): HTMLElement => {
+export const renderDOM = (htmlId: string, rootNode: ReactNode): HTMLElement => {
   const elem = document.getElementById(htmlId)
   if (elem == null) {
     throw new Error('Container elem not found')

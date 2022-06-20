@@ -1,13 +1,13 @@
 import { createDiff, VDomNodeUpdater } from "./diffs"
 import { applyUpdate } from "./render"
-import { VDomNode } from "./virtual_dom"
+import { ReactNode } from "./types"
 
-export abstract class Component<P, S> {
+export abstract class ReactComponent<P, S> {
     
     protected props: P
     protected state: S
     
-    private currentRootNode: VDomNode
+    private currentRootNode: ReactNode
     private mountedElement: HTMLElement | Text
     
     protected setState(updater: (s:S) => S) {
@@ -25,7 +25,7 @@ export abstract class Component<P, S> {
         return this.getUpdateDiff()
     }
     
-    public initProps(props: P): VDomNode {
+    public initProps(props: P): ReactNode {
         this.props = props
         this.currentRootNode = this.render()
         return this.currentRootNode
@@ -55,5 +55,5 @@ export abstract class Component<P, S> {
     public componentDidUpdate() { }
     public componentWillUnmount() { }
     
-    public abstract render(): VDomNode
+    public abstract render(): ReactNode
 }

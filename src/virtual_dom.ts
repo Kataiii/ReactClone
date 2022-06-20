@@ -1,51 +1,60 @@
-import { Component } from './component'
+import { ReactComponent } from './component'
+import { Props, ReactNode, VirtualReactComponent, VirtualReactElement, VirtualReactText } from './types'
 
-export type VDOMAttributes = { [_: string]: string | number | boolean | Function }
 
-export interface VDOMElement {
-  kind: 'element'
-  tagname: string
-  childeren?: VDomNode[]
-  props?: VDOMAttributes
-  key: string
+interface IElementArgs {
+  tagname: string,
+  className?: string,
+  attributes?: Props
+  key: string,
+  children: ReactNode[]
 }
 
-export interface VDOMComponent {
-  kind: 'component'
-  instance?: Component<any, any>
-  props: object
-  component: { new(): Component<any, any> }
-  key: string
+interface IComponentArgs<P extends Object> {
+  props: P,
+  key: string,
+  component: new() => ReactComponent<P, any>,
 }
 
-export interface VDOMText {
-  kind: 'text',
-  value: string
-  key: string
+interface ITextArgs{
+  value: string,
+  key?: string
 }
 
-export type VDomNode = 
-  | VDOMText
-  | VDOMElement
-  | VDOMComponent
 
-export const createElement = (tagname: string, props: VDOMAttributes & { key: string }, ...childeren: VDomNode[]): VDOMElement => {
-  const key = props.key
-  delete props.key
-  return ({ kind: 'element',
-  tagname, props,
-  childeren, key
-})
+export class React {
+  static createElement(args: IElementArgs): VirtualReactElement {
+    const { key, tagname, children, className, attributes } = args;
+
+    const props = {...attributes, className};
+
+    return ({
+      kind: 'element',
+      tagname,
+      key,
+      children: children,
+      props: props
+    });
+  }
+
+  static createComponent<P extends Object>(args: IComponentArgs<P>): VirtualReactComponent {
+    const { key, component, props } = args;
+    return ({
+      component,
+      props,
+      key,
+      kind: 'component'
+    })
+  }
+
+  static createText(args: ITextArgs):VirtualReactText{
+
+    const {value, key} = args;
+
+    return ({
+      kind: 'text',
+      value: value,
+      key: key || '2424'
+    });
+  }
 }
-
-export const createComponent = <P extends object>(component: { new(): Component<P, any> }, props: P & { key: string }): VDOMComponent => {
-  const key = props.key
-  delete props.key
-  return ({
-    component, props, key, kind: 'component'
-  })  
-}
-
-export const createText = (value: string | number | boolean, key: string = '') : VDOMText => ({
-  key, kind: 'text', value: value.toString()
-})

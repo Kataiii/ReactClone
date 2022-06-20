@@ -1,13 +1,14 @@
-import { VDOMAttributes, VDomNode } from "./virtual_dom";
+import { Props, ReactNode } from "./types"
+
 
 type AttributesUpdater = {
-  set: VDOMAttributes
+  set: Props
   remove: string[]
 }
 
 interface InsertOperation {
-  kind: 'insert', 
-  node: VDomNode
+  kind: 'insert',
+  node: ReactNode
 }
 
 interface UpdateOperation {
@@ -18,7 +19,7 @@ interface UpdateOperation {
 
 interface ReplaceOperation {
   kind: 'replace',
-  newNode: VDomNode
+  newNode: ReactNode
   callback?: (elem: HTMLElement | Text) => void
 }
 
@@ -30,11 +31,11 @@ interface SkipOperation {
   kind: 'skip'
 }
 
-export type VDomNodeUpdater = 
+export type VDomNodeUpdater =
   | UpdateOperation
   | ReplaceOperation
   | SkipOperation
-  
+
 export type ChildUpdater =
   | UpdateOperation
   | ReplaceOperation
@@ -44,23 +45,23 @@ export type ChildUpdater =
 
 const skip = (): SkipOperation => ({ kind: 'skip' })
 
-const replace = (newNode: VDomNode): ReplaceOperation => ({ kind: 'replace', newNode })
+const replace = (newNode: ReactNode): ReplaceOperation => ({ kind: 'replace', newNode })
 
-const update = (attributes: AttributesUpdater, childeren: ChildUpdater[]): UpdateOperation => ({ 
-   kind: 'update',
-   attributes,
-   childeren
+const update = (attributes: AttributesUpdater, childeren: ChildUpdater[]): UpdateOperation => ({
+  kind: 'update',
+  attributes,
+  childeren
 })
 
 const remove = (): RemoveOperation => ({ kind: 'remove' })
 
-const insert = (node: VDomNode): InsertOperation => ({ kind: 'insert', node })
+const insert = (node: ReactNode): InsertOperation => ({ kind: 'insert', node })
 
 const isEqual = (val1: any, val2: any): boolean => {
   return false
 }
 
-export const createDiff = (oldNode: VDomNode, newNode: VDomNode): VDomNodeUpdater => {
+export const createDiff = (oldNode: ReactNode, newNode: ReactNode): VDomNodeUpdater => {
   // skip over text nodes with the same text
   if (oldNode.kind == 'text' && newNode.kind == 'text' && oldNode.value == newNode.value) {
     return skip()
@@ -71,23 +72,23 @@ export const createDiff = (oldNode: VDomNode, newNode: VDomNode): VDomNodeUpdate
     return replace(newNode)
   }
 
-  if(oldNode.kind == 'component' && newNode.kind == 'component' && oldNode.component == newNode.component && oldNode.instance) {
+  if (oldNode.kind == 'component' && newNode.kind == 'component' && oldNode.component == newNode.component && oldNode.instance) {
     newNode.instance = oldNode.instance
-    if(isEqual(oldNode.props, newNode.props)) return skip()
+    if (isEqual(oldNode.props, newNode.props)) return skip()
     return newNode.instance.setProps(newNode.props)
   }
 
-  if(oldNode.kind == 'component') {
+  if (oldNode.kind == 'component') {
     oldNode.instance.unmount()
     oldNode.instance = null
     return replace(newNode)
   }
-  
+
   // replace with different component
-  if(newNode.kind == 'component') {
+  if (newNode.kind == 'component') {
     newNode.instance = new newNode.component()
-    return { 
-      kind: 'replace', 
+    return {
+      kind: 'replace',
       newNode: newNode.instance.initProps(newNode.props),
       callback: e => newNode.instance.notifyMounted(e)
     }
@@ -107,14 +108,14 @@ export const createDiff = (oldNode: VDomNode, newNode: VDomNode): VDomNodeUpdate
       .reduce((upd, att) => ({ ...upd, [att]: newNode.props[att] }), {})
   }
 
-  const childsUpdater: ChildUpdater[] = childsDiff((oldNode.childeren || []), (newNode.childeren || []))
+  const childsUpdater: ChildUpdater[] = childsDiff((oldNode.children || []), (newNode.children || []))
 
   return update(attUpdater, childsUpdater)
 }
 
-const removeUntilkey = (operations: ChildUpdater[], elems: [string | number, VDomNode][], key: string | number) => {
-  while(elems[0] && elems[0][0] != key) {
-    if(elems[0][1].kind == 'component') {
+const removeUntilkey = (operations: ChildUpdater[], elems: [string | number, ReactNode][], key: string | number) => {
+  while (elems[0] && elems[0][0] != key) {
+    if (elems[0][1].kind == 'component') {
       elems[0][1].instance.unmount()
       elems[0][1].instance = null
     }
@@ -123,34 +124,34 @@ const removeUntilkey = (operations: ChildUpdater[], elems: [string | number, VDo
   }
 }
 
-const insertUntilKey = (operations: ChildUpdater[], elems: [string | number, VDomNode][], key: string | number) => {
-  while(elems[0] && elems[0][0] != key) {
+const insertUntilKey = (operations: ChildUpdater[], elems: [string | number, ReactNode][], key: string | number) => {
+  while (elems[0] && elems[0][0] != key) {
     operations.push(insert(elems.shift()[1]))
   }
 }
 
-const childsDiff = (oldChilds: VDomNode[], newChilds: VDomNode[]): ChildUpdater[] => {
-  const remainingOldChilds: [string | number, VDomNode][] = oldChilds.map(c => [c.key, c])
-  const remainingNewChilds: [string | number, VDomNode][] = newChilds.map(c => [c.key, c])
+const childsDiff = (oldChilds: ReactNode[], newChilds: ReactNode[]): ChildUpdater[] => {
+  const remainingOldChilds: [string | number, ReactNode][] = oldChilds.map(c => [c.key, c])
+  const remainingNewChilds: [string | number, ReactNode][] = newChilds.map(c => [c.key, c])
 
   const operations: ChildUpdater[] = []
 
   // find the first element that got updated
-  let [ nextUpdateKey ] = remainingOldChilds.find(k => remainingNewChilds.map(k => k[0]).indexOf(k[0]) != -1) || [null]
+  let [nextUpdateKey] = remainingOldChilds.find(k => remainingNewChilds.map(k => k[0]).indexOf(k[0]) != -1) || [null]
 
-  while(nextUpdateKey) {
+  while (nextUpdateKey) {
 
     // first remove all old childs before the update
     removeUntilkey(operations, remainingOldChilds, nextUpdateKey)
-    
+
     // then insert all new childs before the update
     insertUntilKey(operations, remainingNewChilds, nextUpdateKey)
 
     // create the update
     operations.push(createDiff(remainingOldChilds.shift()[1], remainingNewChilds.shift()[1]))
 
-    // find the next update
-    ; [ nextUpdateKey ] = remainingOldChilds.find(k => remainingNewChilds.map(k => k[0]).indexOf(k[0]) != -1) || [null]
+      // find the next update
+      ;[nextUpdateKey] = remainingOldChilds.find(k => remainingNewChilds.map(k => k[0]).indexOf(k[0]) != -1) || [null]
   }
 
   // remove all remaing old childs after the last update
