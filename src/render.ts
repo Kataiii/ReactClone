@@ -3,47 +3,44 @@ import { ChildUpdater, VDomNodeUpdater } from "./diffs";
 import { ReactNode } from "./types";
 
 const renderElement = (rootNode: ReactNode): HTMLElement | Text => {
-  if (rootNode.kind == 'text') {
-    return document.createTextNode(rootNode.value)
-  }
-
-  if(rootNode.kind == 'component') {
-    if(rootNode.instance) {
-      const elem = renderElement(rootNode.instance.render())
+  switch (rootNode.kind) {
+    case 'text':
+      return document.createTextNode(rootNode.value);
+    case 'component':
+      if (rootNode.instance) {
+        const elem = renderElement(rootNode.instance.render())
+        rootNode.instance.notifyMounted(elem as HTMLElement)
+        return elem
+      }
+      rootNode.instance = new rootNode.component()
+      const elem = renderElement(rootNode.instance.initProps(rootNode.props))
       rootNode.instance.notifyMounted(elem as HTMLElement)
-      return elem
-    }
+      return elem;
+    default:
+      const element = document.createElement(rootNode.tagname)
 
-    rootNode.instance = new rootNode.component()
-    const elem = renderElement( rootNode.instance.initProps(rootNode.props))
-    rootNode.instance.notifyMounted(elem as HTMLElement)
-    return elem
+      for (const att in (rootNode.props || {})) {
+        (element as any)[att] = rootNode.props[att]
+      }
+
+      (rootNode.children || []).forEach(child =>
+        element.appendChild(renderElement(child))
+      )
+      return element
   }
-
-  const elem = document.createElement(rootNode.tagname)
-
-  for (const att in (rootNode.props || {})) {
-    (elem as any)[att] = rootNode.props[att]
-  }
-
-  (rootNode.children || []).forEach(child =>
-    elem.appendChild(renderElement(child))
-  )
-
-  return elem
 }
 
 export const applyUpdate = (elem: HTMLElement | Text, diff: VDomNodeUpdater): HTMLElement | Text => {
-  if (diff.kind == 'skip') return elem 
+  if (diff.kind == 'skip') return elem
 
   if (diff.kind == 'replace') {
     const newElem = renderElement(diff.newNode)
     elem.replaceWith(newElem)
-    if(diff.callback) diff.callback(newElem)
+    if (diff.callback) diff.callback(newElem)
     return newElem
   }
 
-  if('wholeText' in elem) throw new Error('invalid update for Text node')
+  if ('wholeText' in elem) throw new Error('invalid update for Text node')
 
   for (const att in diff.attributes.remove) {
     elem.removeAttribute(att)
@@ -70,7 +67,7 @@ const applyChildrenDiff = (elem: HTMLElement, operations: ChildUpdater[]) => {
       else elem.appendChild(renderElement(childUpdater.node))
       continue
     }
-    
+
     const childElem = elem.childNodes[i + offset]
 
     if (childUpdater.kind == 'remove') {

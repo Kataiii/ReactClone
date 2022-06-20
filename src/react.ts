@@ -7,7 +7,7 @@ interface IElementArgs {
   className?: string,
   attributes?: Props
   key: string,
-  children: ReactNode[]
+  children?: ReactNode[]
 }
 
 interface IComponentArgs<P extends Object> {
@@ -32,7 +32,7 @@ export class React {
       kind: 'element',
       tagname,
       key,
-      children: children,
+      children: children || [],
       props: props
     });
   }

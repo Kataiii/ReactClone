@@ -2,7 +2,7 @@
 
 import { ReactComponent } from "./component"
 
-export type Props = { [_: string]: string | number | boolean | Function }
+export type Props = { [_: string]: string | number | boolean | Function | Object }
 
 export interface VirtualReactElement {
   kind: 'element'
