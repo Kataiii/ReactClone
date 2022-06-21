@@ -1,6 +1,7 @@
 import { CellInfo } from "../App";
 import { ReactComponent } from "../component";
 import { generateLetterByNumber } from "../helpers/letterGenerator";
+import Parser from "../helpers/parser";
 import { React } from "../react";
 import { ReactNode } from "../types";
 import Cell, { ICell } from "./cell";
@@ -16,8 +17,12 @@ export interface ITableProp {
 
 class Table extends ReactComponent<ITableProp, {}>{
 
-    componentDidMount(){
+    componentDidMount() {
         this.props.initElements();
+    }
+
+    componentDidUpdate() {
+        Parser.getInstanse().init(this.props.elements);
     }
 
     setSelected = (index: number) => {
@@ -35,12 +40,12 @@ class Table extends ReactComponent<ITableProp, {}>{
             key: 'initialColumn',
             tagname: 'div',
             className: 'column',
-            children: (new Array(rowCount+1).fill('')).map((item, index) => React.createElement({
+            children: (new Array(rowCount + 1).fill('')).map((item, index) => React.createElement({
                 key: `tag${index}`,
                 tagname: 'div',
                 className: 'tag',
                 children: [
-                    React.createText({value: index == 0 ? '' : index.toString()})
+                    React.createText({ value: index == 0 ? '' : index.toString() })
                 ]
             }))
         }))
@@ -51,7 +56,7 @@ class Table extends ReactComponent<ITableProp, {}>{
                 tagname: 'div',
                 className: 'tag',
                 children: [
-                    React.createText({ value: generateLetterByNumber(columnIndex)})
+                    React.createText({ value: generateLetterByNumber(columnIndex) })
                 ]
             })];
             for (let rowIndex = columnIndex; rowIndex < this.props.elements.length; rowIndex += columnCount) {
@@ -60,7 +65,7 @@ class Table extends ReactComponent<ITableProp, {}>{
                     component: Cell,
                     props: {
                         id: rowIndex,
-                        value: this.props.elements[rowIndex].value,
+                        value: this.props.elements[rowIndex], //this.props.elements[rowIndex].value,
                         setValue: this.props.setValue,
                         setSelected: this.setSelected(rowIndex)
                     }

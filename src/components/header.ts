@@ -1,4 +1,5 @@
 import { ReactComponent } from "../component";
+import Parser from "../helpers/parser";
 import { React } from "../react";
 import { ReactNode } from "../types";
 
@@ -10,9 +11,18 @@ export interface IHeaderProps{
 class Header extends ReactComponent<IHeaderProps, {}>{
 
 
-    setValue = (e: any) => {
+    handleChangeEvent = (e: Event) => {
         e.preventDefault();
-        this.props.setValue(e.target.value)
+        const targetValue = e.currentTarget.value as string;
+        if(targetValue.startsWith('<') && targetValue.endsWith('>')){
+            const res = Parser.getInstanse().parse(targetValue.slice(1, targetValue.length-1))
+            const newValue = Number.isNaN(Number(res)) ? '#НЕЧИСЛО': res;
+            this.props.setValue(newValue);
+        }
+        else{
+            this.props.setValue(targetValue);
+        }
+        
     }
 
     public render(): ReactNode {
@@ -27,7 +37,7 @@ class Header extends ReactComponent<IHeaderProps, {}>{
                     className: 'header__input',
                     attributes: {
                         value: this.props.value,
-                        onchange: this.setValue
+                        oninput: this.handleChangeEvent
                     }
                 }),
                 React.createElement({

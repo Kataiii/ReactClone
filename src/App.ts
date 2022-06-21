@@ -2,6 +2,7 @@ import { ReactComponent } from "./component";
 import Header, { IHeaderProps } from "./components/header";
 import Table, { ITableProp } from "./components/table";
 import { generateLetterByNumber } from "./helpers/letterGenerator";
+import Parser from "./helpers/parser";
 import CreationPage, { IConstraints, ITableConstraintsProps } from "./pages/creationPage";
 import { React } from "./react";
 import { ReactNode } from "./types";
@@ -39,7 +40,7 @@ class App extends ReactComponent<{}, IAppState>{
         for (let columnTag = 0; columnTag < columnCount; columnTag++) {
             for (let rowTag = 0; rowTag < rowCount; rowTag++) {
                 elements.push({
-                    tableId: generateLetterByNumber(columnTag) + (rowTag + 1).toString(),
+                    tableId: generateLetterByNumber(rowTag) + (columnTag + 1).toString(),
                     columnTag: columnTag.toString(),
                     rowTag: rowTag.toString(),
                     value: ''
@@ -89,6 +90,13 @@ class App extends ReactComponent<{}, IAppState>{
             ...state,
             elements: this.buildElements(state.constraints.columns, state.constraints.rows)
         }))
+    }
+
+    parseFormula(formula: string) {
+        if (formula[0] === '=') {
+            const res = Parser.getInstanse().parse(formula.slice(1, formula.length));
+            this.setValue(res);
+        }
     }
 
     public render(): ReactNode {
