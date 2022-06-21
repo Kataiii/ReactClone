@@ -27,7 +27,7 @@ class CreationPage extends ReactComponent<ITableConstraintsProps, {}>{
         this.props.setToTable()
     }
 
-    isDisable = () => this.props.constraints.columns <=0 || this.props.constraints.rows <=0;
+    isDisable = () => this.props.constraints.columns <= 0 || this.props.constraints.rows <= 0;
 
     public render(): ReactNode {
         return React.createElement({
@@ -44,63 +44,70 @@ class CreationPage extends ReactComponent<ITableConstraintsProps, {}>{
                     },
                     children: [
                         React.createElement({
-                            key: 'row-wrapper',
+                            key: 'form-input-group',
                             tagname: 'div',
-                            className: 'form__row',
+                            className: 'form__input-group',
                             children: [
                                 React.createElement({
-                                    key: 'label-col',
-                                    tagname: 'label',
-                                    className: 'input__label',
+                                    key: 'row-wrapper',
+                                    tagname: 'div',
+                                    className: 'form__row',
                                     children: [
-                                        React.createText({ value: 'Количество колонн: ' })
+                                        React.createElement({
+                                            key: 'label-col',
+                                            tagname: 'label',
+                                            className: 'input__label',
+                                            children: [
+                                                React.createText({ value: 'Количество колонн: ' })
+                                            ]
+                                        }),
+                                        React.createElement({
+                                            key: 'input-col',
+                                            tagname: 'input',
+                                            className: 'creation__input',
+                                            attributes: {
+                                                value: this.props.constraints.columns,
+                                                onchange: this.changeConstrainsts('columns')
+                                            }
+                                        })
                                     ]
                                 }),
                                 React.createElement({
-                                    key: 'input-col',
-                                    tagname: 'input',
-                                    className: 'creation__input',
-                                    attributes: {
-                                        value: this.props.constraints.columns,
-                                        onchange: this.changeConstrainsts('columns')
-                                    }
-                                })
-                            ]
-                        }),
-                        React.createElement({
-                            key: 'row-wrapper',
-                            tagname: 'div',
-                            className: 'form__row',
-                            children: [
-                                React.createElement({
-                                    key: 'label-r',
-                                    tagname: 'label',
-                                    className: 'input__label',
+                                    key: 'row-wrapper',
+                                    tagname: 'div',
+                                    className: 'form__row',
                                     children: [
-                                        React.createText({ value: 'Количество рядов: ' })
+                                        React.createElement({
+                                            key: 'label-r',
+                                            tagname: 'label',
+                                            className: 'input__label',
+                                            children: [
+                                                React.createText({ value: 'Количество рядов: ' })
+                                            ]
+                                        }),
+                                        React.createElement({
+                                            key: 'input-r',
+                                            tagname: 'input',
+                                            className: 'creation__input',
+                                            attributes: {
+                                                value: this.props.constraints.rows,
+                                                onchange: this.changeConstrainsts('rows')
+                                            }
+                                        })
                                     ]
                                 }),
-                                React.createElement({
-                                    key: 'input-r',
-                                    tagname: 'input',
-                                    className: 'creation__input',
-                                    attributes: {
-                                        value: this.props.constraints.rows,
-                                        onchange: this.changeConstrainsts('rows')
-                                    }
-                                })
                             ]
                         }),
                         React.createElement({
                             key: 'submit-btn',
                             tagname: 'button',
                             className: 'creation__submit',
-                            attributes:{
+                            attributes: {
                                 type: 'submit',
                                 disabled: this.isDisable()
                             },
                             children: [
-                                React.createText({value: 'Создать'})
+                                React.createText({ value: 'Создать' })
                             ]
                         })
 

@@ -4,7 +4,7 @@ import { generateLetterByNumber } from "../helpers/letterGenerator";
 import Parser from "../helpers/parser";
 import { React } from "../react";
 import { ReactNode } from "../types";
-import Cell, { ICell } from "./cell";
+import Cell, { ICell } from "../components/cell";
 
 export interface ITableProp {
     elements: Array<CellInfo>,

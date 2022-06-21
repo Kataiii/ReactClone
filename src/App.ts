@@ -1,6 +1,6 @@
 import { ReactComponent } from "./component";
 import Header, { IHeaderProps } from "./components/header";
-import Table, { ITableProp } from "./components/table";
+import Table, { ITableProp } from "./pages/table";
 import { generateLetterByNumber } from "./helpers/letterGenerator";
 import Parser from "./helpers/parser";
 import CreationPage, { IConstraints, ITableConstraintsProps } from "./pages/creationPage";
