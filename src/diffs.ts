@@ -62,12 +62,10 @@ const isEqual = (val1: any, val2: any): boolean => {
 }
 
 export const createDiff = (oldNode: ReactNode, newNode: ReactNode): VDomNodeUpdater => {
-  // skip over text nodes with the same text
   if (oldNode.kind == 'text' && newNode.kind == 'text' && oldNode.value == newNode.value) {
     return skip()
   }
 
-  // If a textnode is updated we need to replace it completly
   if (oldNode.kind == 'text' || newNode.kind == 'text') {
     return replace(newNode)
   }
@@ -84,7 +82,6 @@ export const createDiff = (oldNode: ReactNode, newNode: ReactNode): VDomNodeUpda
     return replace(newNode)
   }
 
-  // replace with different component
   if (newNode.kind == 'component') {
     newNode.instance = new newNode.component()
     return {
@@ -94,12 +91,10 @@ export const createDiff = (oldNode: ReactNode, newNode: ReactNode): VDomNodeUpda
     }
   }
 
-  // If the tagname of a node is changed we have to replace it completly
   if (oldNode.tagname != newNode.tagname) {
     return replace(newNode)
   }
 
-  // get the updated and replaces attributes
   const attUpdater: AttributesUpdater = {
     remove: Object.keys(oldNode.props || {})
       .filter(att => Object.keys(newNode).indexOf(att) == -1),
@@ -131,33 +126,50 @@ const insertUntilKey = (operations: ChildUpdater[], elems: [string | number, Rea
 }
 
 const childsDiff = (oldChilds: ReactNode[], newChilds: ReactNode[]): ChildUpdater[] => {
-  const remainingOldChilds: [string | number, ReactNode][] = oldChilds.map(c => [c.key, c])
-  const remainingNewChilds: [string | number, ReactNode][] = newChilds.map(c => [c.key, c])
+  let remainingOldChilds: [string | number, ReactNode][] = [];
+  let remainingNewChilds: [string | number, ReactNode][] = [];
+
+  for (let i: number = 0; i < oldChilds.length; i++) {
+    const oldChild: [string | number, ReactNode] = [oldChilds[i].key, oldChilds[i]];
+    remainingOldChilds.push(oldChild);
+  }
+
+  for (let i: number = 0; i < newChilds.length; i++) {
+    const newChild: [string | number, ReactNode] = [newChilds[i].key, newChilds[i]];
+    remainingNewChilds.push(newChild);
+  }
 
   const operations: ChildUpdater[] = []
 
-  // find the first element that got updated
-  let [nextUpdateKey] = remainingOldChilds.find(k => remainingNewChilds.map(k => k[0]).indexOf(k[0]) != -1) || [null]
+  let nextUpdKey : string | number = undefined;
+
+  mainLoop:
+  for (let i: number = 0; i < remainingOldChilds.length; i++){
+    for(let j: number = 0; i < remainingNewChilds.length; j++){
+      let [oldKey] = remainingOldChilds[i];
+      let [newKey] = remainingNewChilds[j];
+      if(oldKey === newKey){
+        nextUpdKey = oldKey;
+        break mainLoop;
+      }
+    }
+  }
+
+  let [nextUpdateKey] = [nextUpdKey] || [null];
 
   while (nextUpdateKey) {
 
-    // first remove all old childs before the update
     removeUntilkey(operations, remainingOldChilds, nextUpdateKey)
 
-    // then insert all new childs before the update
     insertUntilKey(operations, remainingNewChilds, nextUpdateKey)
 
-    // create the update
-    operations.push(createDiff(remainingOldChilds.shift()[1], remainingNewChilds.shift()[1]))
+    operations.push(createDiff(remainingOldChilds.shift()[1], remainingNewChilds.shift()[1]));
 
-      // find the next update
-      ;[nextUpdateKey] = remainingOldChilds.find(k => remainingNewChilds.map(k => k[0]).indexOf(k[0]) != -1) || [null]
+    [nextUpdateKey] = remainingOldChilds.find(k => remainingNewChilds.map(k => k[0]).indexOf(k[0]) != -1) || [null]
   }
 
-  // remove all remaing old childs after the last update
   removeUntilkey(operations, remainingOldChilds, undefined)
 
-  // insert all remaing new childs after the last update
   insertUntilKey(operations, remainingNewChilds, undefined)
 
   return operations

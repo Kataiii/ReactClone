@@ -44,6 +44,8 @@ class Parser {
         let number: number = Number(tmp);
         //Взятие значения из ячейки
         if (Number.isNaN(number)) {
+            if(tmp === "pi")return Math.PI;
+            if(tmp === "e") return Math.E;
             const value = this.elements.find((element) => element.tableId === tmp);
             if(value == undefined ) {
                //ОШИБКА 
@@ -255,17 +257,17 @@ class Parser {
                 let res = 0.0;
                 if (Number.isNaN(Number(num1)) || Number.isNaN(Number(num2))) {
                     let count = Number(num2) - Number(num1);
-                    for (let i = 0; i < count; i++) res += this.getNumber(num1 + i);
+                    for (let i = 0; i <= count; i++) res += this.getNumber(num1 + i);
                 }
                 //проверка для чисел
-                for (let i = Number(num1); i < Number(num2); i++) res += i;
+                for (let i = Number(num1); i <= Number(num2); i++) res += i;
                 return res;
             }
         };
         let args: any = {};
 
         interface Node {
-            type: any;
+            type: string;
             value: any;
             left: any;
             right: any;
